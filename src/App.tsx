@@ -1,27 +1,49 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from '@/components/ui/sonner';
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
+// Layouts
+import MainLayout from '@/layouts/MainLayout';
+
+// Pages
+import LandingPage from '@/pages/LandingPage';
+import LoginPage from '@/pages/auth/LoginPage';
+import RegisterPage from '@/pages/auth/RegisterPage';
+import DashboardPage from '@/pages/DashboardPage';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Router>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          
+          {/* Protected Routes */}
+          <Route path="/app" element={<MainLayout />}>
+            <Route index element={<Navigate to="/app/dashboard" replace />} />
+            <Route path="dashboard" element={<DashboardPage />} />
+          </Route>
+          
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+      </Router>
+      <Toaster />
+    </QueryClientProvider>
+  );
+}
 
 export default App;
